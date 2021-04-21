@@ -18,6 +18,8 @@ main = Blueprint('main', __name__)
 def index():
     """Show upcoming events to users!"""
     # TODO: Get all events and send to the template
+
+    events = Event.query.all()
     return render_template('index.html')
 
 
@@ -25,6 +27,8 @@ def index():
 def event_detail(event_id):
     """Show a single event."""
     # TODO: Get the event with the given id and send to the template
+
+    event = Event.query.filter_by(id=event_id).one()
     return render_template('event_detail.html')
 
 
@@ -32,19 +36,33 @@ def event_detail(event_id):
 def rsvp(event_id):
     """RSVP to an event."""
     # TODO: Get the event with the given id from the database
+
     is_returning_guest = request.form.get('returning')
     guest_name = request.form.get('guest_name')
+    event = Event.query.filter_by(id=event_id).one()
 
     if is_returning_guest:
         # TODO: Look up the guest by name, and add the event to their 
         # events_attending, then commit to the database
-        pass
+
+        guest = Guest.query.filter_by(name=guest_name).one()
+        if guest == None:
+            print('Guest Not On List')
+        else:
+            guest.events_attending.append(event)
+            db.session.add(guest)
+            db.session.commit()
     else:
         guest_email = request.form.get('email')
         guest_phone = request.form.get('phone')
+        
         # TODO: Create a new guest with the given name, email, and phone, and 
         # add the event to their events_attending, then commit to the database
-        pass
+        
+        new_guest = Guest(name = guest_name, phone = guest_phone, email = guest_email)
+        new_guest.events_attending.append(event)
+        db.session.add(new_guest)
+        db.session.commit()
     
     flash('You have successfully RSVP\'d! See you there!')
     return redirect(url_for('main.event_detail', event_id=event_id))
