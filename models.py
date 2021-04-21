@@ -15,7 +15,8 @@ class Guest(db.Model):
     name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(80), nullable=False)
     phone = db.Column(db.String(80), nullable=False)
-    events_attending = db.relationship('event_attending', back_populates='event')
+    events_attending = db.relationship( 'Event', secondary='guest_events', back_populates='guests'
+    )
 
 # TODO: Create a model called `Event` with the following fields:
 # - id: primary key
@@ -32,22 +33,24 @@ class Event(db.Model):
     title = db.Column(db.String(80), nullable=False)
     description = db.Column(db.String(80), nullable=False)
     date_and_time = db.Column(db.String(80), nullable=False)
-    guests = db.relationship('guest', back_populates='event')
+    guests = db.relationship('Guest', secondary='guest_events', back_populates='events_attending'
+    )
+    
 
 
 # TODO: Create a table `guest_event_table` with the following columns:
 # - event_id: Integer column (foreign key)
 # - guest_id: Integer column (foreign key)
 
-
+guest_event_table = db.Table('guest_events',
+    db.Column('guest_id', db.Integer, db.ForeignKey('guest.id')),
+    db.Column('event_id', db.Integer, db.ForeignKey('event.id')),
+)
 
 guest_event_table = None
-create_session TABLE guest_event_table (
-   event_id INTEGER NOT NULL,
-   guest_id  INTEGER NOT NULL,
-   FOREIGN KEY (event_id) REFERENCES Event(id),
-   FOREIGN KEY (guest_id) REFERENCES Guest(id)
-);
+
+
+
 
 
 
